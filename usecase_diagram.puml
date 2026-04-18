@@ -1,0 +1,78 @@
+@startuml
+title 반려동물 출입 시스템 - 유스케이스 다이어그램
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #FEFECE
+skinparam usecaseBorderColor #A80036
+skinparam actorBorderColor #003366
+skinparam actorFontColor #003366
+skinparam arrowColor #555555
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+
+actor "사용자\n(반려인)" as User
+actor "반려동물" as Pet
+actor "관리 서버" as Server
+actor "시스템\n(임베디드 제어기)" as EmbSys
+actor "비인가 객체\n(사람/외부 동물)" as Intruder
+
+rectangle "반려동물 출입 시스템" {
+
+  package "반려동물 관리" {
+    usecase "UC1: 반려동물 등록\n(RFID 칩 등록 포함)" as UC1
+    usecase "UC2: 반려동물 정보\n수정/삭제\n(RFID 태그 재등록 포함)" as UC2
+  }
+
+  package "시스템 설정" {
+    usecase "UC3: 시스템 동작 설정\n(인식거리·개방시간·\n외출시간·경보음)" as UC3
+  }
+
+  package "자동 출입 제어" {
+    usecase "UC4: 자동 출입 제어\n(RFID 인식 → 문 개방)" as UC4
+    usecase "UC6: 네트워크 장애 시\n로컬 인증 출입" as UC6
+    usecase "UC7: 객체 판별\n(사람/외부동물/등록동물 구분)" as UC7
+  }
+
+  package "모니터링 및 알림" {
+    usecase "UC5: 출입 모니터링\n및 알림 확인\n(미복귀 알림 포함)" as UC5
+  }
+
+  package "비상 안전 제어" {
+    usecase "UC8: 비상 상황 자동\n안전 제어\n(저전력·화재 시 잠금 해제)" as UC8
+  }
+}
+
+' 사용자 (반려인) 연관
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC5
+
+' 반려동물 연관
+Pet --> UC4
+Pet --> UC6
+Pet --> UC7
+
+' 비인가 객체 연관
+Intruder --> UC7
+
+' 관리 서버 연관
+Server --> UC1
+Server --> UC2
+Server --> UC3
+Server --> UC4
+Server --> UC5
+Server --> UC7
+Server --> UC8
+
+' 시스템(임베디드) 연관
+EmbSys --> UC6
+EmbSys --> UC8
+
+' 유스케이스 간 관계
+UC7 .> UC4 : <<extend>>\n판별 승인 시
+UC6 .> UC4 : <<include>>\n오프라인 인증
+UC4 ..> UC8 : <<extend>>\n비상 상황 발생 시
+
+@enduml
